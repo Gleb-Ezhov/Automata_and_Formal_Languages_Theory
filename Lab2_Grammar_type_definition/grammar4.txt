@@ -1,0 +1,4 @@
+﻿T={a,b}
+N={S,C,F,D,B}
+P={S>aaCFD,F>AFB|AB,AB>bBA,Ab>bA,AD>D,Cb>bC,CB>C,bCD>0}
+S=S

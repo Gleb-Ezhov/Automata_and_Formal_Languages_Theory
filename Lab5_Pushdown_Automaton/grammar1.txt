@@ -1,0 +1,4 @@
+﻿T={a,b,l,=,<,>,k,d,o}
+N={X,Y,Z,K,L}
+P={X>Y|Y=Y|Y<Y|Y>Y|K,Y>YkZ|YdZ,Z>oa|ob,K>oK,L>l|a|b}
+S=X

@@ -1,0 +1,4 @@
+﻿T={a,b,c}
+N={S,B,C}
+P={S>aSBC|abc,CB>BC,BB>bb,bC>bc,cC>cc}
+S=S
