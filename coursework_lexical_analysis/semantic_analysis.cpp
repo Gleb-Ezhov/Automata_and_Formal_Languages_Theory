@@ -108,7 +108,11 @@ void SemanticAnalysis::realStrToBinary(int index, std::string number)
 void SemanticAnalysis::hexStrToBinary(int index, std::string number)
 {
 	if (number.back() == 'H' || number.back() == 'h') number.pop_back();
-	float a = atof(number.insert(0, "0x").data());
+	float a;
+
+	if (number.front() == '-') a = atof(number.insert(1, "0x").data());
+	else a = atof(number.insert(0, "0x").data());
+	
 	std::bitset<CHAR_BIT * sizeof(a)> bits(a);  // передавая в конструктор целое число в double переменной, оно неявно преобразуется к целому типу
 	analysis->numbersTable->setItem(index, 2, new QTableWidgetItem(QString::fromStdString(bits.to_string())));
 }

@@ -123,3 +123,18 @@ void quickSortIterative(std::vector<std::string>& v, int l, int h)
 
 	delete[] stack;
 }
+
+/// <summary>
+/// Линейный поиск в векторе начиная с конца.
+/// </summary>
+/// <param name="v">Рассматриваемый вектор</param>
+/// <param name="target">Цель для поиска</param>
+/// <returns></returns>
+int linearSearch(std::vector<std::string>& v, std::string target)
+{
+	for (int i = v.size() - 1; i >= 0; --i)
+	{
+		if (v.at(i) == target) return i;
+	}
+	return -1;
+}

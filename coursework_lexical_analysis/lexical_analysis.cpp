@@ -27,8 +27,10 @@ void LexicalAnalysis::lexicalAnalysis()
         {
             IdentifierState(buffer, next);
         }
-        else if (next == '0' || next == '1')
+        else if (next == '0' || next == '1' || (next == '-' && input.front() >= '0' && input.front() <= '9'))
         {
+            // Состояние BinaryState идёт в ход, если число начиналось с 0/1 или с минуса.
+            // Отрицательное число любого формата будет обработано начиная с этого состояния.
             BinaryState(buffer, next);
         }
         else if (next >= '2' && next <= '7') // 8сс
@@ -170,9 +172,9 @@ void LexicalAnalysis::IdentifierState(std::string& buffer, char& next)
         }
         else
         {
-            // сортировка, чтобы дальнейший поиск осуществлялся в отсортированных идентификаторах
-            if (analysis->identifiers.size() > 1) quickSortIterative(analysis->identifiers, 0, analysis->identifiers.size() - 1);
-            index = binarySearch(analysis->identifiers, 0, analysis->identifiers.size() - 1, buffer);
+            // Здесь используется линейный поиск, так как вектор идентификаторов остаётся неотсортированным.
+            // Поиск ведётся с конца вектора, так как я предполагаю, что там будут находится последние часто встречаемые идентификаторы.
+            index = linearSearch(analysis->identifiers, buffer);
 
             if (index == -1)
             {
@@ -465,6 +467,10 @@ void LexicalAnalysis::RealState(std::string& buffer, char& next)
         {
             analysis->errorCode = 1; // ошибка формирования числа
         }
+    }
+    else if (next == 'E' || next == 'e') // переход в состояние Э.ф.*
+    {
+        ExponentialFormExtraState(buffer, next);
     }
     else // ошибка в случае любого другого встречного символа
     {

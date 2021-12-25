@@ -80,7 +80,7 @@ void ProgramAnalysis::textEditsInitialization()
 
 	begin
 		readln x, y;
-		z := 76E-3;
+		z := -76.E-3;
 		flag := false;
 
         o := 71O;
