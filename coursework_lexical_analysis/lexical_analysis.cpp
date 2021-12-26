@@ -116,8 +116,9 @@ void LexicalAnalysis::lexicalAnalysis()
         else if ((next != '\t' && next != '\n' && next != ' ') && (next <= 'A' || next >= 'z' || next != 'd') && (next <= '0' || next >= '9')
             && index == -1 && next != -1)
         {
-            // устанавливается флаг ошибки, если разделитель не был найден
+            // ошибка, если разделитель не был найден
             analysis->errorCode = 2;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА2. Разделитель не найден в таблице разделителей."));
         }
     }
 }
@@ -212,12 +213,13 @@ void LexicalAnalysis::BinaryState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
     else if (next >= '2' && next <= '7') // переход в состояние 8сс
@@ -257,12 +259,13 @@ void LexicalAnalysis::BinaryState(std::string& buffer, char& next)
         next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
     {
         analysis->numbers.push_back(buffer);
-        analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+        analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
         addCodePairToOutput(2, analysis->numbers.size() - 1);
     }
     else // ошибка в случае любого другого встречного символа
     {
-        analysis->errorCode = 1; // ошибка формирования числа
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
 }
 
@@ -278,12 +281,13 @@ void LexicalAnalysis::OctalState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
         return;
     }
@@ -302,12 +306,13 @@ void LexicalAnalysis::OctalState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
     else if (next == '8' || next == '9') // переход в состояние 10сс
@@ -339,12 +344,13 @@ void LexicalAnalysis::OctalState(std::string& buffer, char& next)
         next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
     {
         analysis->numbers.push_back(buffer);
-        analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+        analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
         addCodePairToOutput(2, analysis->numbers.size() - 1);
     }
     else // ошибка в случае любого другого встречного символа
     {
-        analysis->errorCode = 1; // ошибка формирования числа
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
 }
 
@@ -368,12 +374,13 @@ void LexicalAnalysis::DecimalState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
         return;
     }
@@ -400,12 +407,13 @@ void LexicalAnalysis::DecimalState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
     else if (next == '.') // переход в состояние Вещ.
@@ -429,12 +437,13 @@ void LexicalAnalysis::DecimalState(std::string& buffer, char& next)
         next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
     {
         analysis->numbers.push_back(buffer);
-        analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+        analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
         addCodePairToOutput(2, analysis->numbers.size() - 1);
     }
     else // ошибка в случае любого другого встречного символа
     {
-        analysis->errorCode = 1; // ошибка формирования числа
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
 }
 
@@ -460,12 +469,13 @@ void LexicalAnalysis::RealState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "real");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
     else if (next == 'E' || next == 'e') // переход в состояние Э.ф.*
@@ -474,7 +484,8 @@ void LexicalAnalysis::RealState(std::string& buffer, char& next)
     }
     else // ошибка в случае любого другого встречного символа
     {
-        analysis->errorCode = 1; // ошибка формирования числа
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
 }
 
@@ -496,12 +507,13 @@ void LexicalAnalysis::ExponentialFormState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "real");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
     else if (next >= '0' && next <= '9') // от 0 до 9
@@ -524,12 +536,13 @@ void LexicalAnalysis::ExponentialFormState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "real");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
     else if ((next >= 'A' && next <= 'F') || (next >= 'a' && next <= 'f'))
@@ -542,7 +555,8 @@ void LexicalAnalysis::ExponentialFormState(std::string& buffer, char& next)
     }
     else
     {
-        analysis->errorCode = 1; // ошибка формирования числа
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
 }
 
@@ -564,17 +578,19 @@ void LexicalAnalysis::ExponentialFormExtraState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "real");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
     else // ошибка в случае любого другого встречного символа
     {
-        analysis->errorCode = 1; // ошибка формирования числа
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
 }
 
@@ -591,12 +607,13 @@ void LexicalAnalysis::HexadecimalState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
         return;
     }
@@ -617,17 +634,19 @@ void LexicalAnalysis::HexadecimalState(std::string& buffer, char& next)
             next == '\t' || next == '\n' || next == ' ')  // в случае встречи разделителя, либо пробела, число формируется и выводится
         {
             analysis->numbers.push_back(buffer);
-            analysis->addItemToTableWidget(analysis->numbersTable, buffer);
+            analysis->addItemToTableWidget(analysis->numbersTable, buffer, true, "integer");
             addCodePairToOutput(2, analysis->numbers.size() - 1);
         }
         else // ошибка в случае любого другого встречного символа
         {
-            analysis->errorCode = 1; // ошибка формирования числа
+            analysis->errorCode = 1;
+            analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
         return;
     }
     else
     {
-        analysis->errorCode = 1; // ошибка формирования числа
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
 }

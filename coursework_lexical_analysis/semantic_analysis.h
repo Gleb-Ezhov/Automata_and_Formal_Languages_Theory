@@ -1,12 +1,19 @@
 #pragma once
 #include "program_analysis.h"
+#include "lexical_analysis.h"
+
+//class OperationTypesChecker
+//{
+//public:
+//	OperationTypesChecker();
+//};
 
 class SemanticAnalysis
 {
 public:
 	SemanticAnalysis(ProgramAnalysis* analysis);
 
-	std::vector<std::string> expressionStack; // стэк для анализа выражения
+	std::vector<CodePair> expressionStack; // стэк для анализа выражения
 
 	// Семантическая обработка описаний идентификаторов переменных
 	void descriptionSemanticProcessing(std::vector<int> identifiers, int type);
@@ -17,11 +24,16 @@ public:
 	// Перевод чисел в машинный код
 	void allNumbersToMachineRepresentation();
 
-	// Анализ выражения на совместимость типов операндов и операций
-	void expressionAnalysis();
+	// Анализ выражения на совместимость типов операндов и операций.
+	// Функция возвращает строку с результирующим типом выражения.
+	std::string expressionAnalysis();
 
 private:
 	ProgramAnalysis* analysis;
+
+	void operationTypeValidation1(int& index, std::vector<std::string>& strStack);
+	void operationTypeValidation2(int& index, std::vector<std::string>& strStack);
+	void operationTypeValidation3(int& index, std::vector<std::string>& strStack);
 
 	void decimalStrToBinary(int index, std::string number);
 	void realStrToBinary(int index, std::string number);

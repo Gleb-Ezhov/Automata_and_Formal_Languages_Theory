@@ -12,7 +12,6 @@ ProgramAnalysis* analysis;
 void startAnalysisButtonHandler()
 {
     analysis->errorCode = 0;
-    analysis->statusBar->clear();
     analysis->startAnalysis();
 }
 
@@ -26,6 +25,7 @@ int main(int argc, char *argv[])
 
     QPushButton* startAnalysisButton = new QPushButton{};
     startAnalysisButton->setText("Старт");
+    startAnalysisButton->setFixedSize(62, 62);
     // Если кнопка работает вне экземпляра класса, то можно игнорировать макросы SIGNAL и SLOT.
     // Сигнал и функция для него прикрепляются через указатели на соответствующие функции.
     startAnalysisButton->connect(startAnalysisButton, &QPushButton::clicked, &startAnalysisButtonHandler);
@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
 
     // Нижний виджет с кнопкой и строкой состояния
     QWidget* bottomWidget = new QWidget();
+    bottomWidget->setFixedHeight(80);
     QHBoxLayout* bottomLayout = new QHBoxLayout(bottomWidget);
 
     // Левый виджет с компоновкой QGridLayout с таблицами
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
     upperLayout->addWidget(analysis->textEditOutput);
 
     bottomLayout->addWidget(startAnalysisButton);
-    bottomLayout->addWidget(analysis->statusBar);
+    bottomLayout->addWidget(analysis->textEditStatusLogs);
 
     gridLayout->addWidget(analysis->keywordsTable, 0, 0);
     gridLayout->addWidget(analysis->separatorsTable, 0, 1);

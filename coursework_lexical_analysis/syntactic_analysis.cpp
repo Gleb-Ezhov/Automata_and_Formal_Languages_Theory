@@ -8,100 +8,105 @@ SyntacticAnalysis::SyntacticAnalysis(ProgramAnalysis* analysis, SemanticAnalysis
 	syntacticAnalysis();
 }
 
-// Корневое правило "Программа"
+// РљРѕСЂРЅРµРІРѕРµ РїСЂР°РІРёР»Рѕ "РџСЂРѕРіСЂР°РјРјР°"
 void SyntacticAnalysis::syntacticAnalysis()
 {
-	int currentLexemesNumber; // Если цикл разбора программы "зависнет", сохраняющееся кол-во лексем укажет на это.
+	int currentLexemesNumber; // Р•СЃР»Рё С†РёРєР» СЂР°Р·Р±РѕСЂР° РїСЂРѕРіСЂР°РјРјС‹ "Р·Р°РІРёСЃРЅРµС‚", СЃРѕС…СЂР°РЅСЏСЋС‰РµРµСЃСЏ РєРѕР»-РІРѕ Р»РµРєСЃРµРј СѓРєР°Р¶РµС‚ РЅР° СЌС‚Рѕ.
 
 	if (lexemes.front() == CodePair(0, 0)) // lexeme == 'begin'
 	{
 		lexemes.erase(lexemes.begin());
 
-		// Главный цикл разбора текста программы
-		while (currentLexemesNumber = lexemes.size(), analysis->errorCode == 0 && lexemes.size() != 0 && lexemes.front() != CodePair(0, 3)) // lexeme != 'end'
+		// Р“Р»Р°РІРЅС‹Р№ С†РёРєР» СЂР°Р·Р±РѕСЂР° С‚РµРєСЃС‚Р° РїСЂРѕРіСЂР°РјРјС‹
+		while (currentLexemesNumber = lexemes.size(), lexemes.size() != 0 && lexemes.front() != CodePair(0, 3)) // lexeme != 'end'
 		{
-			while (variablesDescription()); // разбор описаний переменных
-			operatorRule(); // разбор оператора
+			while (variablesDescription()); // СЂР°Р·Р±РѕСЂ РѕРїРёСЃР°РЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С…
+			operatorRule(); // СЂР°Р·Р±РѕСЂ РѕРїРµСЂР°С‚РѕСЂР°
 
-			if (currentLexemesNumber == lexemes.size()) break; // проверка на "тупик разбора"
+			if (currentLexemesNumber == lexemes.size()) break; // РїСЂРѕРІРµСЂРєР° РЅР° "С‚СѓРїРёРє СЂР°Р·Р±РѕСЂР°"
 		}
 
-		// Проверка на наличие конечного "end"
+		// РџСЂРѕРІРµСЂРєР° РЅР° РЅР°Р»РёС‡РёРµ РєРѕРЅРµС‡РЅРѕРіРѕ "end"
 		if (lexemes.size() != 0 && lexemes.front() == CodePair(0, 3))
 		{
 			lexemes.erase(lexemes.begin());
 		}
 		else
 		{
-			// В основе синтаксического анализа лежит левосторонний нисходящий разбор программы,
-			// поэтому более глубокие ошибки не нужно перезаписывать, чтобы лучше наблюдать порядок их возникновения.
-			if (analysis->errorCode < 3) analysis->errorCode = 3; // Нарушена структура программы
+			// Р’ РѕСЃРЅРѕРІРµ СЃРёРЅС‚Р°РєСЃРёС‡РµСЃРєРѕРіРѕ Р°РЅР°Р»РёР·Р° Р»РµР¶РёС‚ Р»РµРІРѕСЃС‚РѕСЂРѕРЅРЅРёР№ РЅРёСЃС…РѕРґСЏС‰РёР№ СЂР°Р·Р±РѕСЂ РїСЂРѕРіСЂР°РјРјС‹,
+			// РїРѕСЌС‚РѕРјСѓ Р±РѕР»РµРµ РіР»СѓР±РѕРєРёРµ РѕС€РёР±РєРё РЅРµ РЅСѓР¶РЅРѕ РїРµСЂРµР·Р°РїРёСЃС‹РІР°С‚СЊ, С‡С‚РѕР±С‹ Р»СѓС‡С€Рµ РЅР°Р±Р»СЋРґР°С‚СЊ РїРѕСЂСЏРґРѕРє РёС… РІРѕР·РЅРёРєРЅРѕРІРµРЅРёСЏ.
+			if (analysis->errorCode < 3)
+				analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ1. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РїСЂРѕРіСЂР°РјРјС‹.")),
+				analysis->errorCode = 3;
 		}
 
-		// Если после окончания программы ещё остались какие-то сторонние лексемы, то выводится ошибка.
+		// Р•СЃР»Рё РїРѕСЃР»Рµ РѕРєРѕРЅС‡Р°РЅРёСЏ РїСЂРѕРіСЂР°РјРјС‹ РµС‰С‘ РѕСЃС‚Р°Р»РёСЃСЊ РєР°РєРёРµ-С‚Рѕ СЃС‚РѕСЂРѕРЅРЅРёРµ Р»РµРєСЃРµРјС‹, С‚Рѕ РІС‹РІРѕРґРёС‚СЃСЏ РѕС€РёР±РєР°.
 		if (lexemes.size() != 0)
 		{
-			if (analysis->errorCode < 3) analysis->errorCode = 3;
+			if (analysis->errorCode < 3)
+				analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ1. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РїСЂРѕРіСЂР°РјРјС‹.")),
+				analysis->errorCode = 3;
 		}
 
-		// Семантическая проверка, были ли описаны все идентификаторы переменных
+		// РЎРµРјР°РЅС‚РёС‡РµСЃРєР°СЏ РїСЂРѕРІРµСЂРєР°, Р±С‹Р»Рё Р»Рё РѕРїРёСЃР°РЅС‹ РІСЃРµ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РїРµСЂРµРјРµРЅРЅС‹С…
 		semantic->identifiersSemanticCheck();
-		// Перевод чисел в двоичное представление
+		// РџРµСЂРµРІРѕРґ С‡РёСЃРµР» РІ РґРІРѕРёС‡РЅРѕРµ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ
 		semantic->allNumbersToMachineRepresentation();
 	}
 	else
 	{
-		analysis->errorCode = 3; // Нарушена структура программы
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ1. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РїСЂРѕРіСЂР°РјРјС‹."));
+		analysis->errorCode = 3;
 	}
 }
 
-// Правило "Оператор"
+// РџСЂР°РІРёР»Рѕ "РћРїРµСЂР°С‚РѕСЂ"
 void SyntacticAnalysis::operatorRule()
 {
-	// Если это составной оператор
+	// Р•СЃР»Рё СЌС‚Рѕ СЃРѕСЃС‚Р°РІРЅРѕР№ РѕРїРµСЂР°С‚РѕСЂ
 	if (lexemes.front() == CodePair(0, 0)) // lexeme == "begin"
 	{
 		compoundOperatorRule();
 	}
 
-	// Если это оператор присваивания
+	// Р•СЃР»Рё СЌС‚Рѕ РѕРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 	else if (lexemes.front().tableNum == 3)
 	{
 		assignmentOperator();
 	}
 
-	// Если это условный оператор
+	// Р•СЃР»Рё СЌС‚Рѕ СѓСЃР»РѕРІРЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ
 	else if (lexemes.front() == CodePair(0, 6)) // lexeme == "if"
 	{
 		conditionalOperator();
 	}
 	
-	// Если это фиксированный цикл
+	// Р•СЃР»Рё СЌС‚Рѕ С„РёРєСЃРёСЂРѕРІР°РЅРЅС‹Р№ С†РёРєР»
 	else if (lexemes.front() == CodePair(0, 5)) // lexeme == "for"
 	{
 		fixedLoopOperator();
 	}
 
-	// Если это оператор условного цикла
+	// Р•СЃР»Рё СЌС‚Рѕ РѕРїРµСЂР°С‚РѕСЂ СѓСЃР»РѕРІРЅРѕРіРѕ С†РёРєР»Р°
 	else if (lexemes.front() == CodePair(0, 14)) // lexeme == "while"
 	{
 		conditionalLoopOperator();
 	}
 
-	// Если это оператор ввода
+	// Р•СЃР»Рё СЌС‚Рѕ РѕРїРµСЂР°С‚РѕСЂ РІРІРѕРґР°
 	else if (lexemes.front() == CodePair(0, 9)) // lexeme == "readln"
 	{
 		inputOperator();
 	}
 
-	// Если это оператор вывода
+	// Р•СЃР»Рё СЌС‚Рѕ РѕРїРµСЂР°С‚РѕСЂ РІС‹РІРѕРґР°
 	else if (lexemes.front() == CodePair(0, 15)) // lexeme == "writeln"
 	{
 		outputOperator();
 	}
 }
 
-// Правило "Составной оператор"
+// РџСЂР°РІРёР»Рѕ "РЎРѕСЃС‚Р°РІРЅРѕР№ РѕРїРµСЂР°С‚РѕСЂ"
 void SyntacticAnalysis::compoundOperatorRule()
 {
 	lexemes.erase(lexemes.begin());
@@ -115,22 +120,29 @@ void SyntacticAnalysis::compoundOperatorRule()
 
 	if (lexemes.front() == CodePair(0, 3)) // lexeme == "end"
 		lexemes.erase(lexemes.begin());
-	else analysis->errorCode = 5; // Нарушена структура составного оператора
+	else
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ3. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° СЃРѕСЃС‚Р°РІРЅРѕРіРѕ РѕРїРµСЂР°С‚РѕСЂР°.")),
+		analysis->errorCode = 5;
 }
 
-// "Оператор присваивания"
+// "РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ"
 void SyntacticAnalysis::assignmentOperator()
 {
 	lexemes.erase(lexemes.begin());
 
-	if (lexemes.front() == CodePair(1, 10)) // lexeme == ":="
+	if (lexemes.size() != 0 && lexemes.front() == CodePair(1, 10)) // lexeme == ":="
 		lexemes.erase(lexemes.begin());
-	else analysis->errorCode = 6; // Нарушена структура оператора присваивания
+	else
+	{
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ4. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРµСЂР°С‚РѕСЂР° РїСЂРёСЃРІР°РёРІР°РЅРёСЏ."));
+		analysis->errorCode = 6;
+		if (lexemes.size() == 0) return; // РІС‹С…РѕРґ РёР· Р°РЅР°Р»РёР·Р°, РµСЃР»Рё РІ РєРѕРЅС†Рµ РїСЂРѕРіСЂР°РјРјС‹ РЅРµ Р±С‹Р»Рѕ "end", РЅРѕ РІСЃС‚СЂРµС‚РёР»СЃСЏ РѕС‡РµСЂРµРґРЅРѕР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ
+	}
 
 	expression();
 }
 
-// "Условный оператор"
+// "РЈСЃР»РѕРІРЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ"
 void SyntacticAnalysis::conditionalOperator()
 {
 	lexemes.erase(lexemes.begin());
@@ -141,7 +153,9 @@ void SyntacticAnalysis::conditionalOperator()
 		expression();
 		if (lexemes.front() == CodePair(1, 1)) // lexeme == ')'
 			lexemes.erase(lexemes.begin());
-		else analysis->errorCode = 8; // Нарушена структура условного оператора
+		else
+			analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ6. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° СѓСЃР»РѕРІРЅРѕРіРѕ РѕРїРµСЂР°С‚РѕСЂР°.")),
+			analysis->errorCode = 8;
 
 		operatorRule();
 
@@ -153,11 +167,12 @@ void SyntacticAnalysis::conditionalOperator()
 	}
 	else
 	{
-		analysis->errorCode = 8; // Нарушена структура условного оператора
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ6. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° СѓСЃР»РѕРІРЅРѕРіРѕ РѕРїРµСЂР°С‚РѕСЂР°."));
+		analysis->errorCode = 8;
 	}
 }
 
-// Правило "Оператор фиксированного цикла"
+// РџСЂР°РІРёР»Рѕ "РћРїРµСЂР°С‚РѕСЂ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ С†РёРєР»Р°"
 void SyntacticAnalysis::fixedLoopOperator()
 {
 	lexemes.erase(lexemes.begin());
@@ -165,7 +180,9 @@ void SyntacticAnalysis::fixedLoopOperator()
 
 	if (lexemes.front() == CodePair(0, 12)) // lexeme == "to"
 		lexemes.erase(lexemes.begin());
-	else analysis->errorCode = 9; // Нарушена структура фиксированного цикла
+	else
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ7. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ С†РёРєР»Р°.")),
+		analysis->errorCode = 9;
 
 	expression();
 
@@ -178,28 +195,34 @@ void SyntacticAnalysis::fixedLoopOperator()
 	operatorRule();
 	if (lexemes.front() == CodePair(0, 8)) // lexeme == "next"
 		lexemes.erase(lexemes.begin());
-	else analysis->errorCode = 9; // Нарушена структура фиксированного цикла
+	else
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ7. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ С†РёРєР»Р°.")),
+		analysis->errorCode = 9;
 }
 
-// "Оператор условного цикла"
+// "РћРїРµСЂР°С‚РѕСЂ СѓСЃР»РѕРІРЅРѕРіРѕ С†РёРєР»Р°"
 void SyntacticAnalysis::conditionalLoopOperator()
 {
 	lexemes.erase(lexemes.begin());
 
 	if (lexemes.front() == CodePair(1, 0)) // lexeme == '('
 		lexemes.erase(lexemes.begin());
-	else analysis->errorCode = 10; // Нарушена структура условного цикла
+	else
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ8. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° СѓСЃР»РѕРІРЅРѕРіРѕ С†РёРєР»Р°.")),
+		analysis->errorCode = 10;
 
 	expression();
 
 	if (lexemes.front() == CodePair(1, 1)) // lexeme == ')'
 		lexemes.erase(lexemes.begin());
-	else analysis->errorCode = 10; // Нарушена структура условного цикла
+	else
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ8. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° СѓСЃР»РѕРІРЅРѕРіРѕ С†РёРєР»Р°.")),
+		analysis->errorCode = 10;
 
 	operatorRule();
 }
 
-// Правило "Оператор ввода"
+// РџСЂР°РІРёР»Рѕ "РћРїРµСЂР°С‚РѕСЂ РІРІРѕРґР°"
 void SyntacticAnalysis::inputOperator()
 {
 	lexemes.erase(lexemes.begin());
@@ -211,12 +234,14 @@ void SyntacticAnalysis::inputOperator()
 		
 		if (lexemes.front().tableNum == 3)
 			lexemes.erase(lexemes.begin());
-		else analysis->errorCode = 11; // Нарушена структура оператора ввода
+		else
+			analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ9. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРµСЂР°С‚РѕСЂР° РІРІРѕРґР°.")),
+			analysis->errorCode = 11;
 
 	} while (lexemes.size() != 0 && lexemes.front() == CodePair(1, 5)); // lexeme == ','
 }
 
-// Правило "Оператор вывода"
+// РџСЂР°РІРёР»Рѕ "РћРїРµСЂР°С‚РѕСЂ РІС‹РІРѕРґР°"
 void SyntacticAnalysis::outputOperator()
 {
 	lexemes.erase(lexemes.begin());
@@ -230,52 +255,67 @@ void SyntacticAnalysis::outputOperator()
 	} while (lexemes.size() != 0 && lexemes.front() == CodePair(1, 5)); // lexeme == ','
 }
 
-// Правило "Выражение"
+// РџСЂР°РІРёР»Рѕ "Р’С‹СЂР°Р¶РµРЅРёРµ"
 void SyntacticAnalysis::expression()
 {
+	semantic->expressionStack.clear(); // РѕС‡РёСЃС‚РєР° СЃС‚СЌРєР° РІС‹СЂР°Р¶РµРЅРёСЏ РїРµСЂРµРґ РЅРѕРІС‹Рј РІС‹СЂР°Р¶РµРЅРёРµРј
+
 	do
 	{
 		// lexeme == '<>' || '=' || '<' || '<=' || '>' || '>='
 		if (lexemes.front() == CodePair(1, 14) || lexemes.front() == CodePair(1, 15) || lexemes.front() == CodePair(1, 12) || lexemes.front() == CodePair(1, 13) || lexemes.front() == CodePair(1, 16) || lexemes.front() == CodePair(1, 17))
+			semantic->expressionStack.push_back(lexemes.front()), // РІ СЃС‚СЌРє РІС‹СЂР°Р¶РµРЅРёСЏ РїРѕРїР°РґР°РµС‚ РѕРїРµСЂР°С†РёСЏ (РґР»СЏ СЃРµРјР°РЅС‚РёС‡РµСЃРєРѕРіРѕ Р°РЅР°Р»РёР·Р°)
 			lexemes.erase(lexemes.begin());
+
 		operand();
 	} while (lexemes.size() != 0 &&
 		(lexemes.front() == CodePair(1, 14) || lexemes.front() == CodePair(1, 15) || lexemes.front() == CodePair(1, 12) || lexemes.front() == CodePair(1, 13) || lexemes.front() == CodePair(1, 16) || lexemes.front() == CodePair(1, 17)));
+
+	semantic->expressionAnalysis(); // РЎРµРјР°РЅС‚РёС‡РµСЃРєРёР№ Р°РЅР°Р»РёР· С‚РѕР»СЊРєРѕ С‡С‚Рѕ РїСЂРѕС‡РёС‚Р°РЅРЅРѕРіРѕ РІС‹СЂР°Р¶РµРЅРёСЏ (РїСЂРѕРІРµСЂРєР° РЅР° СЃРѕРІРјРµСЃС‚РёРјРѕСЃС‚СЊ С‚РёРїРѕРІ РѕРїРµСЂР°РЅРґРѕРІ Рё РѕРїРµСЂР°С†РёР№)
 }
 
-// Правило "Операнд"
+// РџСЂР°РІРёР»Рѕ "РћРїРµСЂР°РЅРґ"
 void SyntacticAnalysis::operand()
 {
 	do
 	{
 		// lexeme == '+' || '-' || "or"
 		if (lexemes.front() == CodePair(1, 4) || lexemes.front() == CodePair(1, 6) || lexemes.front() == CodePair(1, 20))
+			semantic->expressionStack.push_back(lexemes.front()), // РІ СЃС‚СЌРє РІС‹СЂР°Р¶РµРЅРёСЏ РїРѕРїР°РґР°РµС‚ РѕРїРµСЂР°С†РёСЏ (РґР»СЏ СЃРµРјР°РЅС‚РёС‡РµСЃРєРѕРіРѕ Р°РЅР°Р»РёР·Р°)
 			lexemes.erase(lexemes.begin());
+
 		term();
 	} while (lexemes.size() != 0 &&
 		(lexemes.front() == CodePair(1, 4) || lexemes.front() == CodePair(1, 6) || lexemes.front() == CodePair(1, 20)));
 }
 
-// Правило "Слагаемое"
+// РџСЂР°РІРёР»Рѕ "РЎР»Р°РіР°РµРјРѕРµ"
 void SyntacticAnalysis::term()
 {
 	do
 	{
 		// lexeme == '*' || '/' || "and"
 		if (lexemes.front() == CodePair(1, 2) || lexemes.front() == CodePair(1, 7) || lexemes.front() == CodePair(1, 18))
+			semantic->expressionStack.push_back(lexemes.front()), // РІ СЃС‚СЌРє РІС‹СЂР°Р¶РµРЅРёСЏ РїРѕРїР°РґР°РµС‚ РѕРїРµСЂР°С†РёСЏ (РґР»СЏ СЃРµРјР°РЅС‚РёС‡РµСЃРєРѕРіРѕ Р°РЅР°Р»РёР·Р°)
 			lexemes.erase(lexemes.begin());
+
 		factor();
 	} while (lexemes.size() != 0 &&
 		(lexemes.front() == CodePair(1, 2) || lexemes.front() == CodePair(1, 7) || lexemes.front() == CodePair(1, 18)));
 }
 
-// Правило "Множитель"
+// РџСЂР°РІРёР»Рѕ "РњРЅРѕР¶РёС‚РµР»СЊ"
 void SyntacticAnalysis::factor()
 {
 	if (lexemes.front().tableNum == 3 || lexemes.front().tableNum == 2 || lexemes.front() == CodePair(0, 13) || lexemes.front() == CodePair(0, 4))
+	{
+		// РїРµСЂРµРґ СѓРґР°Р»РµРЅРёРµРј РІС…РѕРґСЏС‰РµР№ Р»РµРєСЃРµРјС‹, РѕРЅР° Р·Р°РЅРѕСЃРёС‚СЃСЏ РІ СЃС‚СЌРє РІС‹СЂР°Р¶РµРЅРёСЏ РґР»СЏ РґР°Р»СЊРЅРµР№С€РµРіРѕ СЃРµРјР°РЅС‚РёС‡РµСЃРєРѕРіРѕ Р°РЅР°Р»РёР·Р°
+		semantic->expressionStack.push_back(lexemes.front());
 		lexemes.erase(lexemes.begin());
+	}
 	else if (lexemes.front() == CodePair(1, 19)) // lexeme == "not"
 	{
+		semantic->expressionStack.push_back(lexemes.front());
 		lexemes.erase(lexemes.begin());
 		factor();
 	}
@@ -285,20 +325,23 @@ void SyntacticAnalysis::factor()
 		expression();
 		if (lexemes.front() == CodePair(1, 1)) // lexeme == ')'
 			lexemes.erase(lexemes.begin());
-		else analysis->errorCode = 7; // Нарушена структура выражения
+		else
+			analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ5. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РІС‹СЂР°Р¶РµРЅРёСЏ.")),
+			analysis->errorCode = 7;
 	}
 	else
 	{
-		analysis->errorCode = 7; // Нарушена структура выражения
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ5. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РІС‹СЂР°Р¶РµРЅРёСЏ."));
+		analysis->errorCode = 7;
 	}
 }
 
-// Правило "Описание переменных"
+// РџСЂР°РІРёР»Рѕ "РћРїРёСЃР°РЅРёРµ РїРµСЂРµРјРµРЅРЅС‹С…"
 bool SyntacticAnalysis::variablesDescription()
 {
-	bool isThereDescription = false; // флаг для определения наличия "описания переменных" в лексемах
+	bool isThereDescription = false; // С„Р»Р°Рі РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ РЅР°Р»РёС‡РёСЏ "РѕРїРёСЃР°РЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С…" РІ Р»РµРєСЃРµРјР°С…
 
-	// Если был найден разделитель ';' и перед ним стоит тип данных, то продолжаем разбор описания переменных
+	// Р•СЃР»Рё Р±С‹Р» РЅР°Р№РґРµРЅ СЂР°Р·РґРµР»РёС‚РµР»СЊ ';' Рё РїРµСЂРµРґ РЅРёРј СЃС‚РѕРёС‚ С‚РёРї РґР°РЅРЅС‹С…, С‚Рѕ РїСЂРѕРґРѕР»Р¶Р°РµРј СЂР°Р·Р±РѕСЂ РѕРїРёСЃР°РЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С…
 	for (int i = 0; i < lexemes.size(); ++i)
 	{
 		if (lexemes.at(i) == CodePair(1, 11) && i != 0) // lexeme == ';'
@@ -312,7 +355,7 @@ bool SyntacticAnalysis::variablesDescription()
 	}
 	if (!isThereDescription) return false;
 
-	std::vector<int> identifiers; // номера встреченных идентификаторов для обработки их описания
+	std::vector<int> identifiers; // РЅРѕРјРµСЂР° РІСЃС‚СЂРµС‡РµРЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РёС… РѕРїРёСЃР°РЅРёСЏ
 	do
 	{
 		if (lexemes.front() == CodePair(1, 5))
@@ -325,7 +368,8 @@ bool SyntacticAnalysis::variablesDescription()
 		}
 		else
 		{
-			analysis->errorCode = 4; // Нарушена структура описания переменных
+			analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ2. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃР°РЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С…."));
+			analysis->errorCode = 4;
 			return false;
 		}
 	}
@@ -335,19 +379,21 @@ bool SyntacticAnalysis::variablesDescription()
 		lexemes.erase(lexemes.begin());
 	else
 	{
-		analysis->errorCode = 4; // Нарушена структура описания переменных
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ2. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃР°РЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С…."));
+		analysis->errorCode = 4;
 		return false;
 	}
 
 	// lexeme == "boolean" || "integer" || "real"
 	if (lexemes.front() == CodePair(0, 1) || lexemes.front() == CodePair(0, 7) || lexemes.front() == CodePair(0, 10))
 	{
-		semantic->descriptionSemanticProcessing(identifiers, lexemes.front().indexNum); // семантическая обработка описанных идентификаторов переменных
+		semantic->descriptionSemanticProcessing(identifiers, lexemes.front().indexNum); // СЃРµРјР°РЅС‚РёС‡РµСЃРєР°СЏ РѕР±СЂР°Р±РѕС‚РєР° РѕРїРёСЃР°РЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РїРµСЂРµРјРµРЅРЅС‹С…
 		lexemes.erase(lexemes.begin());
 	}
 	else
 	{
-		analysis->errorCode = 4; // Нарушена структура описания переменных
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ2. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃР°РЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С…."));
+		analysis->errorCode = 4;
 		return false;
 	}
 
@@ -355,7 +401,8 @@ bool SyntacticAnalysis::variablesDescription()
 		lexemes.erase(lexemes.begin());
 	else
 	{
-		analysis->errorCode = 4; // Нарушена структура описания переменных
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРёРђ2. РќР°СЂСѓС€РµРЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃР°РЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С…."));
+		analysis->errorCode = 4;
 		return false;
 	}
 

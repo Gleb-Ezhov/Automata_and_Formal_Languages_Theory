@@ -12,6 +12,7 @@ ProgramAnalysis::ProgramAnalysis()
 void ProgramAnalysis::startAnalysis()
 {
     errorCode = 0;
+    textEditStatusLogs->clear();
     textEditOutput->clear();
     numbersTable->setRowCount(0);
     identifiersTable->setRowCount(0);
@@ -25,45 +26,53 @@ void ProgramAnalysis::startAnalysis()
         SyntacticAnalysis* syntactic = new SyntacticAnalysis(this, semantic, lexical->getLexicalOutput());
     }
 
-    // todo переделать в switch
     if (!errorCode)
-        statusBar->setText(QString::fromStdString("Этап анализа успешно завершён."));
-    else if (errorCode == 1)
-        statusBar->setText(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
-    else if (errorCode == 2)
-        statusBar->setText(QString::fromStdString("Ошибка ЛА2. Разделитель не найден в таблице разделителей."));
-    else if (errorCode == 3)
-        statusBar->setText(QString("Ошибка СиА1. Нарушена структура программы."));
-    else if (errorCode == 4)
-        statusBar->setText(QString("Ошибка СиА2. Нарушена структура описания переменных."));
-    else if (errorCode == 5)
-        statusBar->setText(QString("Ошибка СиА3. Нарушена структура составного оператора."));
-    else if (errorCode == 6)
-        statusBar->setText(QString("Ошибка СиА4. Нарушена структура оператора присваивания."));
-    else if (errorCode == 7)
-        statusBar->setText(QString("Ошибка СиА5. Нарушена структура выражения."));
-    else if (errorCode == 8)
-        statusBar->setText(QString("Ошибка СиА6. Нарушена структура условного оператора."));
-    else if (errorCode == 9)
-        statusBar->setText(QString("Ошибка СиА7. Нарушена структура фиксированного цикла."));
-    else if (errorCode == 10)
-        statusBar->setText(QString("Ошибка СиА8. Нарушена структура условного цикла."));
-    else if (errorCode == 11)
-        statusBar->setText(QString("Ошибка СиА9. Нарушена структура оператора ввода."));
-    else if (errorCode == 12)
-        statusBar->setText(QString("Ошибка СеА1. Идентификатор описан более одного раза."));
-    else if (errorCode == 13)
-        statusBar->setText(QString("Ошибка СеА2. Некоторые из идентификаторов не были описаны."));
+        textEditStatusLogs->append(QString::fromStdString("Этап анализа успешно завершён."));
     else
-        statusBar->setText(QString::fromStdString("Ошибка анализа."));
+        textEditStatusLogs->append(QString::fromStdString("Ошибка анализа."));
+
+    // Старый способ отображения ошибок для QLineEdit статус бара.
+    /*if (!errorCode)
+        textEditStatusLogs->append(QString::fromStdString("Этап анализа успешно завершён."));
+    else if (errorCode == 1)
+        textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
+    else if (errorCode == 2)
+        textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА2. Разделитель не найден в таблице разделителей."));
+    else if (errorCode == 3)
+        textEditStatusLogs->append(QString("Ошибка СиА1. Нарушена структура программы."));
+    else if (errorCode == 4)
+        textEditStatusLogs->append(QString("Ошибка СиА2. Нарушена структура описания переменных."));
+    else if (errorCode == 5)
+        textEditStatusLogs->append(QString("Ошибка СиА3. Нарушена структура составного оператора."));
+    else if (errorCode == 6)
+        textEditStatusLogs->append(QString("Ошибка СиА4. Нарушена структура оператора присваивания."));
+    else if (errorCode == 7)
+        textEditStatusLogs->append(QString("Ошибка СиА5. Нарушена структура выражения."));
+    else if (errorCode == 8)
+        textEditStatusLogs->append(QString("Ошибка СиА6. Нарушена структура условного оператора."));
+    else if (errorCode == 9)
+        textEditStatusLogs->append(QString("Ошибка СиА7. Нарушена структура фиксированного цикла."));
+    else if (errorCode == 10)
+        textEditStatusLogs->append(QString("Ошибка СиА8. Нарушена структура условного цикла."));
+    else if (errorCode == 11)
+        textEditStatusLogs->append(QString("Ошибка СиА9. Нарушена структура оператора ввода."));
+    else if (errorCode == 12)
+        textEditStatusLogs->append(QString("Ошибка СеА1. Идентификатор описан более одного раза."));
+    else if (errorCode == 13)
+        textEditStatusLogs->append(QString("Ошибка СеА2. Некоторые из идентификаторов не были описаны."));
+    else
+        textEditStatusLogs->append(QString::fromStdString("Ошибка анализа."));*/
 }
 
-void ProgramAnalysis::addItemToTableWidget(QTableWidget* table, std::string& lexeme)
+void ProgramAnalysis::addItemToTableWidget(QTableWidget* table, std::string& lexeme, bool isNumber, std::string type)
 {
     int rowCount = table->rowCount();
     table->insertRow(rowCount);
     table->setItem(rowCount, 0, new QTableWidgetItem(QString::fromStdString(std::to_string(rowCount))));
     table->setItem(rowCount, 1, new QTableWidgetItem(QString::fromStdString(lexeme)));
+
+    if (isNumber)
+        table->setItem(rowCount, 3, new QTableWidgetItem(QString::fromStdString(type)));
 }
 
 void ProgramAnalysis::textEditsInitialization()
@@ -108,8 +117,9 @@ end)"));
     textEditOutput->setFont(font);
     textEditOutput->setReadOnly(true);
 
-    statusBar = new QLineEdit();
-    statusBar->setReadOnly(true);
+    textEditStatusLogs = new QTextEdit();
+    textEditStatusLogs->setReadOnly(true);
+    textEditStatusLogs->setFixedHeight(60);
 }
 
 void ProgramAnalysis::tablesInitialization()
@@ -143,13 +153,14 @@ void ProgramAnalysis::tablesInitialization()
     }
 
     numbersTable = new QTableWidget();
-    numbersTable->setColumnCount(3);
+    numbersTable->setColumnCount(4);
     numbersTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    QStringList headers3 = { "№", "Число", "Машинное представ." };
+    QStringList headers3 = { "№", "Число", "Машинное представ.", "Тип" };
     numbersTable->setHorizontalHeaderLabels(headers3);
     numbersTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     numbersTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     numbersTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    numbersTable->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     numbersTable->verticalHeader()->setVisible(false);
     numbersTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 

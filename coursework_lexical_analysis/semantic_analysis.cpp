@@ -23,7 +23,9 @@ void SemanticAnalysis::descriptionSemanticProcessing(std::vector<int> identifier
 	for (int index : identifiers)
 	{
 		analysis->identifierSemanticFill(index, counters[index], typeStr);
-		if (counters[index] > 1) analysis->errorCode = 12; // Идентификатор описан более одного раза
+		if (counters[index] > 1)
+			analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРµРђ1. РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕРїРёСЃР°РЅ Р±РѕР»РµРµ РѕРґРЅРѕРіРѕ СЂР°Р·Р°.")),
+			analysis->errorCode = 12;
 	}
 
 	delete[] counters;
@@ -35,14 +37,148 @@ void SemanticAnalysis::identifiersSemanticCheck()
 	{
 		if (!analysis->identifiersTable->item(i, 2))
 		{
-			analysis->errorCode = 13; // Некоторые из идентификаторв не были описаны
+			analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРµРђ2. РќРµРєРѕС‚РѕСЂС‹Рµ РёР· РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РЅРµ Р±С‹Р»Рё РѕРїРёСЃР°РЅС‹."));
+			analysis->errorCode = 13;
 		}
 	}
 }
 
-void SemanticAnalysis::expressionAnalysis()
+std::string SemanticAnalysis::expressionAnalysis()
 {
-	// todo написать анализ выражения
+	std::vector<std::string> strStack; // СЃС‚СЌРє РґР»СЏ РІС‹СЂР°Р¶РµРЅРёСЏ РІ СЃС‚СЂРѕРєРѕРІРѕРј РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРё
+	for (CodePair el : expressionStack)
+	{
+		if (el.tableNum == 3) // РґРѕР±Р°РІР»СЏРµС‚СЃСЏ С‚РёРї РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР°
+		{
+			strStack.push_back(analysis->identifiersTable->item(el.indexNum, 3)->text().toStdString());
+		}
+		else if (el.tableNum == 1) // РґРѕР±Р°РІР»СЏРµС‚СЃСЏ РѕРїРµСЂР°С†РёСЏ
+		{
+			strStack.push_back(analysis->separatorsTable->item(el.indexNum, 1)->text().toStdString());
+		}
+		else if (el.tableNum == 2) // РґРѕР±Р°РІР»СЏРµС‚СЃСЏ С‚РёРї С‡РёСЃР»Р°
+		{
+			strStack.push_back(analysis->numbersTable->item(el.indexNum, 3)->text().toStdString());
+		}
+		else if (el.tableNum == 0) // РµСЃР»Рё РІСЃС‚СЂРµС‡РµРЅР° Р»РѕРіРёС‡РµСЃРєР°СЏ РєРѕРЅСЃС‚Р°РЅС‚Р° РІ РІС‹СЂР°Р¶РµРЅРёРё (true/false)
+		{
+			strStack.push_back("boolean");
+		}
+	}
+
+	if (strStack.size() == 1) return strStack.at(0); // РІРѕР·РІСЂР°С‚ РѕРґРёРЅРѕС‡РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РІ РІС‹СЂР°Р¶РµРЅРёРё
+
+	int i = 0;
+	while (strStack.size() != 1 && analysis->errorCode != 14)
+	{
+		for (i = 0; i < strStack.size(); ++i)
+		{
+			if (strStack.at(i) == "*" || strStack.at(i) == "+" || strStack.at(i) == "-" || strStack.at(i) == "/")
+			{
+				operationTypeValidation1(i, strStack);
+				break;
+			}
+			else if (strStack.at(i) == "<" || strStack.at(i) == "<=" || strStack.at(i) == "<>" ||
+				strStack.at(i) == ">" || strStack.at(i) == ">=" || strStack.at(i) == "=")
+			{
+				operationTypeValidation2(i, strStack);
+				break;
+			}
+			else if (strStack.at(i) == "and" || strStack.at(i) == "not" || strStack.at(i) == "or")
+			{
+				operationTypeValidation3(i, strStack);
+				break;
+			}
+		}
+	}
+	return strStack.at(0);
+}
+
+void SemanticAnalysis::operationTypeValidation1(int& index, std::vector<std::string>& strStack)
+{
+	if (strStack.at(index - 1) == "integer" && strStack.at(index + 1) == "integer")
+	{
+		// СѓРґР°Р»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕР№ РѕРїРµСЂР°С†РёРё РёР· СЃС‚СЌРєР° РІС‹СЂР°Р¶РµРЅРёСЏ
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+
+		// РґРѕР±Р°РІР»РµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚Р° РѕРїРµСЂР°С†РёРё РІ СЃС‚СЌРє
+		if (strStack.at(index) == "/") strStack.insert(strStack.begin(), "real");
+		else strStack.insert(strStack.begin(), "integer");
+	}
+	else if (strStack.at(index - 1) == "real" && strStack.at(index + 1) == "integer" ||
+		strStack.at(index - 1) == "integer" && strStack.at(index + 1) == "real" ||
+		strStack.at(index - 1) == "real" && strStack.at(index + 1) == "real")
+	{
+		// СѓРґР°Р»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕР№ РѕРїРµСЂР°С†РёРё РёР· СЃС‚СЌРєР° РІС‹СЂР°Р¶РµРЅРёСЏ
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+
+		// РґРѕР±Р°РІР»РµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚Р° РѕРїРµСЂР°С†РёРё РІ СЃС‚СЌРє
+		strStack.insert(strStack.begin(), "real");
+	}
+	else if (strStack.at(index - 1) == "boolean" || strStack.at(index + 1) == "boolean")
+	{
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРµРђ3. РќРµСЃРѕРІРјРµСЃС‚РёРјС‹Рµ С‚РёРїС‹ РІ РІС‹СЂР°Р¶РµРЅРёРё."));
+		analysis->errorCode = 14;
+	}
+}
+
+void SemanticAnalysis::operationTypeValidation2(int& index, std::vector<std::string>& strStack)
+{
+	if (strStack.at(index - 1) == "integer" && strStack.at(index + 1) == "integer")
+	{
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+
+		strStack.insert(strStack.begin(), "boolean");
+	}
+	else if (strStack.at(index - 1) == "real" && strStack.at(index + 1) == "integer" ||
+		strStack.at(index - 1) == "integer" && strStack.at(index + 1) == "real" ||
+		strStack.at(index - 1) == "real" && strStack.at(index + 1) == "real")
+	{
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+
+		strStack.insert(strStack.begin(), "boolean");
+	}
+	else if (strStack.at(index - 1) == "boolean" || strStack.at(index + 1) == "boolean")
+	{
+		if (strStack.at(index) == "<>" || strStack.at(index) == "=")
+		{
+			strStack.erase(strStack.begin());
+			strStack.erase(strStack.begin());
+			strStack.erase(strStack.begin());
+
+			strStack.insert(strStack.begin(), "boolean");
+		}
+		else
+		{
+			analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРµРђ3. РќРµСЃРѕРІРјРµСЃС‚РёРјС‹Рµ С‚РёРїС‹ РІ РІС‹СЂР°Р¶РµРЅРёРё."));
+			analysis->errorCode = 14;
+		}
+	}
+}
+
+void SemanticAnalysis::operationTypeValidation3(int& index, std::vector<std::string>& strStack)
+{
+	if (strStack.at(index - 1) == "boolean" && strStack.at(index + 1) == "boolean")
+	{
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+		strStack.erase(strStack.begin());
+
+		strStack.insert(strStack.begin(), "boolean");
+	}
+	else
+	{
+		analysis->textEditStatusLogs->append(QString("РћС€РёР±РєР° РЎРµРђ3. РќРµСЃРѕРІРјРµСЃС‚РёРјС‹Рµ С‚РёРїС‹ РІ РІС‹СЂР°Р¶РµРЅРёРё."));
+		analysis->errorCode = 14;
+	}
 }
 
 void SemanticAnalysis::allNumbersToMachineRepresentation()
@@ -60,7 +196,7 @@ void SemanticAnalysis::allNumbersToMachineRepresentation()
 		if (realNumberDot != std::string::npos || (realNumberExponentBig != std::string::npos && (lastChar != 'H' && lastChar != 'h'))
 			|| realNumberExponentSmall != std::string::npos && (lastChar != 'H' && lastChar != 'h'))
 		{
-			// сюда падает вещественное число (нашлась точка или экспонента)
+			// СЃСЋРґР° РїР°РґР°РµС‚ РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ С‡РёСЃР»Рѕ (РЅР°С€Р»Р°СЃСЊ С‚РѕС‡РєР° РёР»Рё СЌРєСЃРїРѕРЅРµРЅС‚Р°)
 			realStrToBinary(i, analysis->numbers.at(i));
 		}
 		else if (lastChar == 'D' || lastChar == 'd' || lastChar >= '0' && lastChar <= '9')
@@ -88,15 +224,15 @@ void SemanticAnalysis::decimalStrToBinary(int index, std::string number)
 	
 	int a = atoi(number.data());
 	
-	// В качестве строки передаётся bitset с количеством бит 8 * sizeof(a). Набор бит составляется автоматически
-	// после передачи целого числа в конструктор bitset.
+	// Р’ РєР°С‡РµСЃС‚РІРµ СЃС‚СЂРѕРєРё РїРµСЂРµРґР°С‘С‚СЃСЏ bitset СЃ РєРѕР»РёС‡РµСЃС‚РІРѕРј Р±РёС‚ 8 * sizeof(a). РќР°Р±РѕСЂ Р±РёС‚ СЃРѕСЃС‚Р°РІР»СЏРµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё
+	// РїРѕСЃР»Рµ РїРµСЂРµРґР°С‡Рё С†РµР»РѕРіРѕ С‡РёСЃР»Р° РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ bitset.
 	analysis->numbersTable->setItem(index, 2, new QTableWidgetItem(QString::fromStdString(std::bitset<CHAR_BIT * sizeof(a)>(a).to_string())));
 }
 
 void SemanticAnalysis::realStrToBinary(int index, std::string number)
 {
-	// Байты вещественного числа копируются в переменную uint64_t размером 64 бита, как и double.
-	// Целое число преобразуется в битовую последовательность внутри конструктора bitset.
+	// Р‘Р°Р№С‚С‹ РІРµС‰РµСЃС‚РІРµРЅРЅРѕРіРѕ С‡РёСЃР»Р° РєРѕРїРёСЂСѓСЋС‚СЃСЏ РІ РїРµСЂРµРјРµРЅРЅСѓСЋ uint64_t СЂР°Р·РјРµСЂРѕРј 64 Р±РёС‚Р°, РєР°Рє Рё double.
+	// Р¦РµР»РѕРµ С‡РёСЃР»Рѕ РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ РІ Р±РёС‚РѕРІСѓСЋ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РІРЅСѓС‚СЂРё РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР° bitset.
 	double realNumber = atof(number.data());
 	uint64_t u;
 	memcpy(&u, &realNumber, sizeof(realNumber));
@@ -113,14 +249,14 @@ void SemanticAnalysis::hexStrToBinary(int index, std::string number)
 	if (number.front() == '-') a = atof(number.insert(1, "0x").data());
 	else a = atof(number.insert(0, "0x").data());
 	
-	std::bitset<CHAR_BIT * sizeof(a)> bits(a);  // передавая в конструктор целое число в double переменной, оно неявно преобразуется к целому типу
+	std::bitset<CHAR_BIT * sizeof(a)> bits(a);  // РїРµСЂРµРґР°РІР°СЏ РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ С†РµР»РѕРµ С‡РёСЃР»Рѕ РІ double РїРµСЂРµРјРµРЅРЅРѕР№, РѕРЅРѕ РЅРµСЏРІРЅРѕ РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ Рє С†РµР»РѕРјСѓ С‚РёРїСѓ
 	analysis->numbersTable->setItem(index, 2, new QTableWidgetItem(QString::fromStdString(bits.to_string())));
 }
 
 void SemanticAnalysis::binStrToBinary(int index, std::string number)
 {
 	if (number.back() == 'B' || number.back() == 'b') number.pop_back();
-	// В конструктор передаётся строка с последовательностью бит, она и будет взята за основу bitset'ом.
+	// Р’ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РїРµСЂРµРґР°С‘С‚СЃСЏ СЃС‚СЂРѕРєР° СЃ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊСЋ Р±РёС‚, РѕРЅР° Рё Р±СѓРґРµС‚ РІР·СЏС‚Р° Р·Р° РѕСЃРЅРѕРІСѓ bitset'РѕРј.
 	std::bitset<CHAR_BIT * sizeof(int)> bits(number);
 	analysis->numbersTable->setItem(index, 2, new QTableWidgetItem(QString::fromStdString(bits.to_string())));
 }

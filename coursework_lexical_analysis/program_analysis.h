@@ -12,7 +12,7 @@ public:
 	void startAnalysis();
 
 	// Добавление лексемы в одну из таблиц
-	void addItemToTableWidget(QTableWidget* table, std::string& lexeme);
+	void addItemToTableWidget(QTableWidget* table, std::string& lexeme, bool isNumber = 0, std::string type = "");
 
 	// Заполнение семантических параметров идентификатора
 	void ProgramAnalysis::identifierSemanticFill(int index, int descrCounter, std::string type);
@@ -29,7 +29,7 @@ public:
 
 	QTextEdit* textEditInput;
 	QTextEdit* textEditOutput;
-	QLineEdit* statusBar;
+	QTextEdit* textEditStatusLogs;
 	int errorCode = 0;
 
 private:
