@@ -128,6 +128,8 @@ void SyntacticAnalysis::compoundOperatorRule()
 // "Оператор присваивания"
 void SyntacticAnalysis::assignmentOperator()
 {
+	// тип переменной справа от оператора присваивания
+	std::string identifierType = analysis->identifiersTable->item(lexemes.front().indexNum, 3)->text().toStdString();
 	lexemes.erase(lexemes.begin());
 
 	if (lexemes.size() != 0 && lexemes.front() == CodePair(1, 10)) // lexeme == ":="
@@ -139,7 +141,12 @@ void SyntacticAnalysis::assignmentOperator()
 		if (lexemes.size() == 0) return; // выход из анализа, если в конце программы не было "end", но встретился очередной идентификатор
 	}
 
-	expression();
+	// expression() возвращает тип правой части присваивания. Если типы не соответствуют друг другу – выводится ошибка.
+	if (identifierType != expression())
+	{
+		analysis->textEditStatusLogs->append(QString("Ошибка СеА4. Тип идентификатора не соответсвует типу выражения в операторе присваивания."));
+		analysis->errorCode = 15;
+	}
 }
 
 // "Условный оператор"
@@ -150,7 +157,13 @@ void SyntacticAnalysis::conditionalOperator()
 	if (lexemes.front() == CodePair(1, 0)) // lexeme = '('
 	{
 		lexemes.erase(lexemes.begin());
-		expression();
+
+		if (expression() != "boolean") // Отрабатывает expression() + вывод ошибки в случае неправильного типа выражения
+		{
+			analysis->textEditStatusLogs->append(QString("Ошибка СеА5. Результирующий тип выражения в условном операторе отличен от boolean."));
+			analysis->errorCode = 16;
+		}
+
 		if (lexemes.front() == CodePair(1, 1)) // lexeme == ')'
 			lexemes.erase(lexemes.begin());
 		else
@@ -184,7 +197,11 @@ void SyntacticAnalysis::fixedLoopOperator()
 		analysis->textEditStatusLogs->append(QString("Ошибка СиА7. Нарушена структура фиксированного цикла.")),
 		analysis->errorCode = 9;
 
-	expression();
+	if (expression() != "boolean") // Отрабатывает expression() + вывод ошибки в случае неправильного типа выражения
+	{
+		analysis->textEditStatusLogs->append(QString("Ошибка СеА6. Результирующий тип выражения в операторе фиксированного цикла отличен от boolean."));
+		analysis->errorCode = 17;
+	}
 
 	if (lexemes.front() == CodePair(0, 11)) // lexeme == "step"
 	{
@@ -211,7 +228,11 @@ void SyntacticAnalysis::conditionalLoopOperator()
 		analysis->textEditStatusLogs->append(QString("Ошибка СиА8. Нарушена структура условного цикла.")),
 		analysis->errorCode = 10;
 
-	expression();
+	if (expression() != "boolean") // Отрабатывает expression() + вывод ошибки в случае неправильного типа выражения
+	{
+		analysis->textEditStatusLogs->append(QString("Ошибка СеА7. Результирующий тип выражения в операторе условного цикла отличен от boolean."));
+		analysis->errorCode = 18;
+	}
 
 	if (lexemes.front() == CodePair(1, 1)) // lexeme == ')'
 		lexemes.erase(lexemes.begin());
@@ -256,7 +277,7 @@ void SyntacticAnalysis::outputOperator()
 }
 
 // Правило "Выражение"
-void SyntacticAnalysis::expression()
+std::string SyntacticAnalysis::expression()
 {
 	semantic->expressionStack.clear(); // очистка стэка выражения перед новым выражением
 
@@ -271,7 +292,7 @@ void SyntacticAnalysis::expression()
 	} while (lexemes.size() != 0 &&
 		(lexemes.front() == CodePair(1, 14) || lexemes.front() == CodePair(1, 15) || lexemes.front() == CodePair(1, 12) || lexemes.front() == CodePair(1, 13) || lexemes.front() == CodePair(1, 16) || lexemes.front() == CodePair(1, 17)));
 
-	semantic->expressionAnalysis(); // Семантический анализ только что прочитанного выражения (проверка на совместимость типов операндов и операций)
+	return semantic->expressionAnalysis(); // Семантический анализ только что прочитанного выражения (проверка на совместимость типов операндов и операций)
 }
 
 // Правило "Операнд"

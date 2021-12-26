@@ -60,6 +60,21 @@ void ProgramAnalysis::startAnalysis()
         textEditStatusLogs->append(QString("Ошибка СеА1. Идентификатор описан более одного раза."));
     else if (errorCode == 13)
         textEditStatusLogs->append(QString("Ошибка СеА2. Некоторые из идентификаторов не были описаны."));
+
+        analysis->textEditStatusLogs->append(QString("Ошибка СеА3. Несовместимые типы в выражении."));
+        analysis->errorCode = 14;
+
+        analysis->textEditStatusLogs->append(QString("Ошибка СеА4. Тип идентификатора не соответсвует типу выражения в операторе присваивания."));
+        analysis->errorCode = 15;
+
+        analysis->textEditStatusLogs->append(QString("Ошибка СеА5. Результирующий тип выражения в условном операторе отличен от boolean."));
+        analysis->errorCode = 16;
+
+        analysis->textEditStatusLogs->append(QString("Ошибка СеА6. Результирующий тип выражения в операторе фиксированного цикла отличен от boolean."));
+        analysis->errorCode = 17;
+
+        analysis->textEditStatusLogs->append(QString("Ошибка СеА7. Результирующий тип выражения в операторе условного цикла отличен от boolean."));
+        analysis->errorCode = 18;
     else
         textEditStatusLogs->append(QString::fromStdString("Ошибка анализа."));*/
 }

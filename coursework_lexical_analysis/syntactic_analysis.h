@@ -13,7 +13,7 @@ private:
 	void operatorRule();
 	void compoundOperatorRule();
 	void assignmentOperator();
-	void expression();
+	std::string expression();
 	void factor();
 	void term();
 	void operand();

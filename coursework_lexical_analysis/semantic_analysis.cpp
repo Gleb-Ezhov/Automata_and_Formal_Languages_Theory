@@ -96,6 +96,7 @@ std::string SemanticAnalysis::expressionAnalysis()
 
 void SemanticAnalysis::operationTypeValidation1(int& index, std::vector<std::string>& strStack)
 {
+	std::string operation = strStack.at(index);
 	if (strStack.at(index - 1) == "integer" && strStack.at(index + 1) == "integer")
 	{
 		// удаление обработанной операции из стэка выражения
@@ -104,7 +105,7 @@ void SemanticAnalysis::operationTypeValidation1(int& index, std::vector<std::str
 		strStack.erase(strStack.begin());
 
 		// добавление результата операции в стэк
-		if (strStack.at(index) == "/") strStack.insert(strStack.begin(), "real");
+		if (operation == "/") strStack.insert(strStack.begin(), "real");
 		else strStack.insert(strStack.begin(), "integer");
 	}
 	else if (strStack.at(index - 1) == "real" && strStack.at(index + 1) == "integer" ||
