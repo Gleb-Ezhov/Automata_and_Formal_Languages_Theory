@@ -33,19 +33,15 @@ void SyntacticAnalysis::syntacticAnalysis()
 		}
 		else
 		{
-			// В основе синтаксического анализа лежит левосторонний нисходящий разбор программы,
-			// поэтому более глубокие ошибки не нужно перезаписывать, чтобы лучше наблюдать порядок их возникновения.
-			if (analysis->errorCode < 3)
-				analysis->textEditStatusLogs->append(QString("Ошибка СиА1. Нарушена структура программы.")),
-				analysis->errorCode = 3;
+			analysis->textEditStatusLogs->append(QString("Ошибка СиА1. Нарушена структура программы.")),
+			analysis->errorCode = 3;
 		}
 
 		// Если после окончания программы ещё остались какие-то сторонние лексемы, то выводится ошибка.
 		if (lexemes.size() != 0)
 		{
-			if (analysis->errorCode < 3)
-				analysis->textEditStatusLogs->append(QString("Ошибка СиА1. Нарушена структура программы.")),
-				analysis->errorCode = 3;
+			analysis->textEditStatusLogs->append(QString("Ошибка СиА1. Нарушена структура программы.")),
+			analysis->errorCode = 3;
 		}
 
 		// Семантическая проверка, были ли описаны все идентификаторы переменных
