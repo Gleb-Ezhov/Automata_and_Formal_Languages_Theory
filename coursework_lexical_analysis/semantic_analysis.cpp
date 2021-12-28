@@ -45,6 +45,7 @@ void SemanticAnalysis::identifiersSemanticCheck()
 
 std::string SemanticAnalysis::expressionAnalysis()
 {
+	analysis->errorCode = 0;
 	std::vector<std::string> strStack; // стэк для выражения в строковом представлении
 	for (CodePair el : expressionStack)
 	{
@@ -96,6 +97,8 @@ std::string SemanticAnalysis::expressionAnalysis()
 			}
 		}
 	}
+
+	if (strStack.size() != 1) return "null";  // если выражение не удалось разобрать из-за несовместимости типов
 	return strStack.at(0);
 }
 
@@ -152,7 +155,7 @@ void SemanticAnalysis::operationTypeValidation2(int& index, std::vector<std::str
 
 		strStack.insert(strStack.begin(), "boolean");
 	}
-	else if (strStack.at(index - 1) == "boolean" || strStack.at(index + 1) == "boolean")
+	else if (strStack.at(index - 1) == "boolean" && strStack.at(index + 1) == "boolean")
 	{
 		if (strStack.at(index) == "<>" || strStack.at(index) == "=")
 		{
@@ -167,6 +170,11 @@ void SemanticAnalysis::operationTypeValidation2(int& index, std::vector<std::str
 			analysis->textEditStatusLogs->append(QString("Ошибка СеА3. Несовместимые типы в выражении."));
 			analysis->errorCode = 14;
 		}
+	}
+	else
+	{
+		analysis->textEditStatusLogs->append(QString("Ошибка СеА3. Несовместимые типы в выражении."));
+		analysis->errorCode = 14;
 	}
 }
 
