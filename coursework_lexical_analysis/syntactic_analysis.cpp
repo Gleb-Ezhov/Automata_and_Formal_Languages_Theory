@@ -128,8 +128,13 @@ void SyntacticAnalysis::compoundOperatorRule()
 // "Оператор присваивания"
 void SyntacticAnalysis::assignmentOperator()
 {
-	// тип переменной справа от оператора присваивания
-	std::string identifierType = analysis->identifiersTable->item(lexemes.front().indexNum, 3)->text().toStdString();
+	std::string identifierType;
+
+	if (analysis->identifiersTable->item(lexemes.front().indexNum, 2) != nullptr) // только если идентификатор был описан
+	{
+		// тип переменной справа от оператора присваивания
+		identifierType = analysis->identifiersTable->item(lexemes.front().indexNum, 3)->text().toStdString();
+	}
 	lexemes.erase(lexemes.begin());
 
 	if (lexemes.size() != 0 && lexemes.front() == CodePair(1, 10)) // lexeme == ":="

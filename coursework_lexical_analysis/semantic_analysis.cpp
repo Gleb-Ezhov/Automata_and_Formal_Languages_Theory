@@ -50,6 +50,10 @@ std::string SemanticAnalysis::expressionAnalysis()
 	{
 		if (el.tableNum == 3) // добавляется тип идентификатора
 		{
+			if (analysis->identifiersTable->item(el.indexNum, 2) == nullptr) // если идентификатор не был описан
+			{
+				return "null"; // всё выражение целиком вернёт "null" тип
+			}
 			strStack.push_back(analysis->identifiersTable->item(el.indexNum, 3)->text().toStdString());
 		}
 		else if (el.tableNum == 1) // добавляется операция
@@ -67,6 +71,7 @@ std::string SemanticAnalysis::expressionAnalysis()
 	}
 
 	if (strStack.size() == 1) return strStack.at(0); // возврат одиночного значения в выражении
+	if (strStack.size() == 0) return "null";
 
 	int i = 0;
 	while (strStack.size() != 1 && analysis->errorCode != 14)

@@ -478,9 +478,24 @@ void LexicalAnalysis::RealState(std::string& buffer, char& next)
             analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
         }
     }
-    else if (next == 'E' || next == 'e') // переход в состояние Э.ф.*
+    // Убрал разбор экспоненты сразу после точки, чтобы ЛА соответствовал диаграмме состояний с действиями и диаграмме вирта вещественного числа,
+    // хотя такой синтаксис сам по себе не является ошибкой (в C++ он поддерживается)
+    //else if (next == 'E' || next == 'e') // переход в состояние Э.ф.*
+    //{
+    //    ExponentialFormExtraState(buffer, next);
+    //}
+    else if (next == 'E' || next == 'e') // ошибка в случае экспоненты сразу после точки
     {
-        ExponentialFormExtraState(buffer, next);
+        // вот это всё нужно только чтобы пропустить ошибочно считываемое число после символа экспоненты
+        next = getCharacterFromInput();
+        if (next == '-' || next == '+') next = getCharacterFromInput();
+        while (next = getCharacterFromInput(), (next >= '0' && next <= '9')) // от 0 до 9
+        {
+            buffer.push_back(next);
+        }
+
+        analysis->errorCode = 1;
+        analysis->textEditStatusLogs->append(QString::fromStdString("Ошибка ЛА1. Ошибка формирования числа."));
     }
     else // ошибка в случае любого другого встречного символа
     {
