@@ -9,13 +9,13 @@ struct CodePair
 	int tableNum;
 	int indexNum;
 
-	bool operator == (CodePair& p)
+	bool operator == (const CodePair& p)
 	{
 		if (this->tableNum == p.tableNum && this->indexNum == p.indexNum) return true;
 		return false;
 	}
 
-	bool operator != (CodePair& p)
+	bool operator != (const CodePair& p)
 	{
 		if (this->tableNum != p.tableNum || this->indexNum != p.indexNum) return true;
 		return false;
