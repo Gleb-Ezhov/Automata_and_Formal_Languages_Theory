@@ -1,7 +1,14 @@
-## Automata and formal languages theory
+# Automata and formal languages theory
 
-Две лабораторные работы и курсовая работа в виде компилятора модельного языка (GUI на Qt).
+Решение включает:
+- Компилятор модельного языка (лексический, синтаксический и семантический этапы анализа; скриншот ниже);
+- Определитель типа грамматики по исходному файлу с её описанием;
+- Реализация автомата с магазинной памятью.
 
 <p align="center">
-  <img src="./repomedia/compiler.png" alt="Image"/>
+  <img src="./repomedia/compiler1.png" alt="Image"/>
 </p>
+
+## Сборка и запуск
+
+Проекты собираются и запускаются в Visual Studio при помощи расширения Qt Visual Studio Tools.
